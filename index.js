@@ -12,10 +12,14 @@ const cmdargs = require('./lib/util/cmd.helper.js');
 const cluster = require('cluster');
 const numCPUs = require('os').cpus().length;
 const { version } = require('./package.json');
-
-
+const passport = require('passport');
+const passportConfig = require('./passportConfig');
 
 function startXmysql(sqlConfig) {
+  /**************** START : setup mysql ****************/
+  let mysqlPool = mysql.createPool(sqlConfig);
+  /**************** END : setup mysql ****************/
+
   /**************** START : setup express ****************/
   let app = express();
   app.set('version', version);
@@ -27,11 +31,10 @@ function startXmysql(sqlConfig) {
   }));
   /**************** END : setup express ****************/
 
+  app.use(passport.initialize());
+  app.use(passport.session());
 
-  /**************** START : setup mysql ****************/
-  let mysqlPool = mysql.createPool(sqlConfig);
-  /**************** END : setup mysql ****************/
-
+  passportConfig(passport, mysqlPool);
 
   /**************** START : setup Xapi ****************/
   console.log('');
@@ -90,7 +93,3 @@ function start(sqlConfig) {
 
 
 start(sqlConfig);
-
-
-
-
